@@ -1,0 +1,1 @@
+"""External automation entry points."""

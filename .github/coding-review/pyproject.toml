@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "langgraph-coding-review"
+version = "0.2.0"
+description = "Three specialist code reviewers coordinated with LangGraph"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["langgraph>=1.0,<2", "langchain-openai>=1.0,<2", "openai>=2,<4", "pydantic>=2.7,<3"]
+
+[project.optional-dependencies]
+test = ["pytest>=8,<10"]
+dev = ["ruff>=0.9,<1"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
+[project.scripts]
+coding-review = "coding_review.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["coding_review*"]
