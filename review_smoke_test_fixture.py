@@ -11,3 +11,4 @@ def average_customer_balance(balances):
     return sum(balances) / len(balances)
 
 # Verification retry after configuring the repository's Fireworks secret alias.
+# Verification retry with a reasoning-aware completion budget.
