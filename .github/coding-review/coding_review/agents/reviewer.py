@@ -1,10 +1,10 @@
 """Specialist execution, response validation, and evidence verification."""
 
-import json
 import logging
 from time import monotonic
 
-from coding_review.agents.evidence import verify_evidence
+from coding_review.agents.context import source_prompt
+from coding_review.agents.evidence import resolve_evidence
 from coding_review.agents.prompts import POLICY, SPECIALTIES
 from coding_review.domain import AgentResult, Review, State
 from coding_review.errors import diagnose, error_summary
@@ -18,6 +18,7 @@ def make_reviewer(name, model):
         logger.info("agent_started agent=%s", name)
         stage = "configure_structured_output"
         reviewer = None
+        corrections = []
         try:
             reviewer = model.with_structured_output(Review)
             stage = "provider_request_or_parsing"
@@ -26,8 +27,7 @@ def make_reviewer(name, model):
                     ("system", POLICY + "\nYour specialty: " + SPECIALTIES[name]),
                     (
                         "human",
-                        "Review this source snapshot (JSON path-to-source mapping):\n"
-                        + json.dumps(state["files"]),
+                        source_prompt(state["files"]),
                     ),
                 ]
             )
@@ -37,10 +37,25 @@ def make_reviewer(name, model):
             accepted = []
             limitations = list(answer.limitations)
             for finding in answer.findings:
-                if not verify_evidence(finding, state["files"]):
+                resolved, method = resolve_evidence(finding, state["files"])
+                if resolved is None:
                     limitations.append(f"Discarded unverified finding: {finding.title}")
                 else:
-                    accepted.append(finding)
+                    accepted.append(resolved)
+                    if method != "exact":
+                        corrections.append(
+                            {
+                                "title": finding.title,
+                                "file": finding.file,
+                                "original_line": finding.line,
+                                "line": resolved.line,
+                                "method": method,
+                            }
+                        )
+            if corrections:
+                limitations.append(
+                    f"Corrected {len(corrections)} source citation(s) using unambiguous matches in the cited file; exact source excerpts retained."
+                )
             result = AgentResult(
                 agent=name, status="ok", findings=accepted, limitations=limitations
             )
@@ -53,6 +68,7 @@ def make_reviewer(name, model):
                 limitations=["Review failed: " + error_summary(detail)],
             )
         result.execution = dict(getattr(reviewer, "execution_metadata", {}))
+        result.execution["citation_corrections"] = corrections
         result.execution["duration_seconds"] = round(monotonic() - started, 3)
         if result.execution.get("backend") == "codex" and not result.execution.get("actual_model"):
             result.limitations.append(
