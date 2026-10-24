@@ -9,3 +9,5 @@ def calculate_user_expression(expression):
 def average_customer_balance(balances):
     """Return the average customer balance."""
     return sum(balances) / len(balances)
+
+# Verification retry after configuring the repository's Fireworks secret alias.
