@@ -53,7 +53,8 @@ class FireworksStructuredReviewer:
         payload = [
             {
                 "role": "system",
-                "content": "Return only JSON matching this schema:\n" + json.dumps(schema),
+                "content": "Return only JSON matching this schema. Keep findings concise and return at most 10 actionable findings.\n"
+                + json.dumps(schema),
             }
         ]
         roles = {"system": "system", "human": "user", "user": "user", "assistant": "assistant"}
@@ -68,7 +69,10 @@ class FireworksStructuredReviewer:
                     "schema": schema,
                 },
             },
-            max_tokens=8192,
+            # The provider's completion budget includes reasoning tokens.
+            # Leave room for the final JSON after the model's analysis.
+            max_tokens=32768,
+            reasoning_effort="low",
         )
         actual_model = getattr(response, "model", None)
         if isinstance(actual_model, str) and actual_model:
@@ -78,9 +82,13 @@ class FireworksStructuredReviewer:
         if not response.choices:
             raise ProviderResponseError("Fireworks returned no response choices.")
         choice = response.choices[0]
+        self.execution_metadata["finish_reason"] = choice.finish_reason
+        usage = getattr(response, "usage", None)
+        if usage is not None:
+            self.execution_metadata["usage"] = usage.model_dump(exclude_none=True)
         if choice.finish_reason == "length":
             raise ProviderResponseError(
-                "Fireworks output reached the token limit; review a smaller source snapshot."
+                "Fireworks output reached the 32768-token reasoning/response limit; review a smaller source snapshot."
             )
         if choice.finish_reason != "stop":
             raise ProviderResponseError(
