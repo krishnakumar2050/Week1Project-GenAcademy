@@ -20,10 +20,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Checkout trusted base code only
+      - name: Checkout trusted default-branch review engine
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: ${{ github.event.pull_request.base.sha }}
+          ref: ${{ github.event.repository.default_branch }}
           persist-credentials: false
       - name: Detect initial installation
         id: installation
