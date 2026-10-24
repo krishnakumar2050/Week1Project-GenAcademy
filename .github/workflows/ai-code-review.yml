@@ -45,11 +45,11 @@ jobs:
       - name: Review PR source through Fireworks
         if: steps.installation.outputs.ready == 'true'
         env:
-          FIREWORKS_API_KEY: ${{ secrets.FIREWORKS_API_KEY }}
+          FIREWORKS_API_KEY: ${{ secrets.FIREWORKS_API_KEY || secrets.CODINGAGENT }}
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           if [ -z "$FIREWORKS_API_KEY" ]; then
-            echo '::error::Add FIREWORKS_API_KEY under repository Settings > Secrets and variables > Actions.'
+            echo '::error::Add FIREWORKS_API_KEY (or CODINGAGENT) under repository Settings > Secrets and variables > Actions.'
             exit 1
           fi
           python -m coding_review.integrations.github review
