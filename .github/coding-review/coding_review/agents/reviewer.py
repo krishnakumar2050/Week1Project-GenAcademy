@@ -5,6 +5,7 @@ from time import monotonic
 
 from coding_review.agents.context import source_prompt
 from coding_review.agents.evidence import resolve_evidence
+from coding_review.agents.knowledge import enrich_quality
 from coding_review.agents.prompts import POLICY, SPECIALTIES
 from coding_review.domain import AgentResult, Review, State
 from coding_review.errors import diagnose, error_summary
@@ -19,6 +20,9 @@ def make_reviewer(name, model):
         stage = "configure_structured_output"
         reviewer = None
         corrections = []
+        knowledge_context, knowledge = (
+            enrich_quality(state["files"]) if name == "quality" else ("", None)
+        )
         try:
             reviewer = model.with_structured_output(Review)
             stage = "provider_request_or_parsing"
@@ -27,7 +31,7 @@ def make_reviewer(name, model):
                     ("system", POLICY + "\nYour specialty: " + SPECIALTIES[name]),
                     (
                         "human",
-                        source_prompt(state["files"]),
+                        source_prompt(state["files"]) + knowledge_context,
                     ),
                 ]
             )
@@ -68,6 +72,12 @@ def make_reviewer(name, model):
                 limitations=["Review failed: " + error_summary(detail)],
             )
         result.execution = dict(getattr(reviewer, "execution_metadata", {}))
+        if knowledge is not None:
+            result.execution["knowledge_enrichment"] = knowledge
+            if knowledge["status"] in {"failed", "empty"}:
+                result.limitations.append(
+                    "Keenable enrichment unavailable or empty; quality review used source context only."
+                )
         result.execution["citation_corrections"] = corrections
         result.execution["duration_seconds"] = round(monotonic() - started, 3)
         if result.execution.get("backend") == "codex" and not result.execution.get("actual_model"):
