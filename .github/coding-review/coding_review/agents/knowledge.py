@@ -7,11 +7,14 @@ from urllib.parse import urlsplit
 
 LANGUAGES = {
     ".py": "Python",
+    ".swift": "Swift",
     ".js": "JavaScript",
     ".jsx": "JavaScript",
     ".ts": "TypeScript",
     ".tsx": "TypeScript",
     ".java": "Java",
+    ".kt": "Kotlin",
+    ".kts": "Kotlin",
     ".go": "Go",
     ".rs": "Rust",
 }
