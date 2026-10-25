@@ -37,6 +37,22 @@ def markdown(report):
                 f"| {agent['agent']} | {metadata.get('requested_model') or default} | {metadata.get('actual_model') or 'Unknown'} | {metadata.get('model_source', 'unavailable')} |"
             ]
         lines += [""]
+    for agent in report["agents"]:
+        knowledge = agent.get("execution", {}).get("knowledge_enrichment", {})
+        if knowledge and knowledge.get("status") != "disabled":
+            lines += [
+                "## Agent 1 anti-pattern knowledge",
+                "",
+                f"Keenable status: {knowledge['status']}",
+                "",
+            ]
+            for source in knowledge.get("sources", []):
+                lines += [f"- {source['title']} — {source['url']}"]
+            lines += [
+                "",
+                "External guidance supplements source analysis; it is not repository evidence.",
+                "",
+            ]
     for index, finding in enumerate(report["findings"], 1):
         lines += [
             f"## {index}. [{finding['severity'].upper()}] {finding['title']}",
