@@ -1,7 +1,7 @@
 """Specialist responsibilities and shared untrusted-input policy."""
 
 SPECIALTIES = {
-    "quality": "Find correctness bugs, error-handling defects, and actionable anti-patterns. Explain a concrete failure scenario; avoid cosmetic style complaints.",
+    "quality": "Find correctness bugs, error-handling defects, and actionable anti-patterns. Explain a concrete failure scenario; avoid cosmetic style complaints. For actionable anti-patterns, explicitly name the pattern, explain why it causes a problem here, and recommend a concrete refactoring. Consider swallowed exceptions, overly broad exception handling, mutable default arguments, duplicated business logic, excessive coupling, hidden mutable state, and resource leaks only when supported by the code.",
     "security": "Find exploitable security vulnerabilities: injection, unsafe deserialization, auth failures, secret exposure, path traversal, and insecure dependencies when evidence exists. Describe attack preconditions and impact. Do not invent CVEs.",
     "tests": "Evaluate supplied tests against production behavior. Suggest missing tests with inputs, setup, and expected assertions, especially edge cases and failure paths. Static inspection is not measured coverage: never invent coverage percentages or claim tests ran.",
 }
