@@ -6,10 +6,12 @@ from typing import Literal
 
 from coding_review.exceptions import ConfigurationError
 
+DEFAULT_BACKEND = "fireworks"
+
 
 @dataclass(frozen=True)
 class ReviewConfig:
-    backend: Literal["codex", "openai", "fireworks"] = "fireworks"
+    backend: Literal["codex", "openai", "fireworks"] = DEFAULT_BACKEND
     model: str | None = None
     timeout: float = 240
     max_bytes: int = 120_000
