@@ -41,10 +41,12 @@ jobs:
           python-version: '3.13'
       - name: Install trusted review engine
         if: steps.installation.outputs.ready == 'true'
-        run: python -m pip install ./.github/coding-review
+        run: python -m pip install "./.github/coding-review[knowledge]"
       - name: Review PR source through Fireworks
         if: steps.installation.outputs.ready == 'true'
         env:
+          KEENABLE_ENABLED: 'true'
+          KEENABLE_API_KEY: ${{ secrets.KEENABLE_API_KEY }}
           FIREWORKS_API_KEY: ${{ secrets.FIREWORKS_API_KEY || secrets.CODINGAGENT }}
           GITHUB_TOKEN: ${{ github.token }}
         run: |
