@@ -11,6 +11,7 @@ requires-python = ">=3.10"
 dependencies = ["langgraph>=1.0,<2", "langchain-openai>=1.0,<2", "openai>=2,<4", "pydantic>=2.7,<3"]
 
 [project.optional-dependencies]
+knowledge = ["keenable==0.1.1"]
 test = ["pytest>=8,<10"]
 dev = ["ruff>=0.9,<1"]
 
